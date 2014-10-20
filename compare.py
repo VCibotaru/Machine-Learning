@@ -11,7 +11,9 @@ def load_labels(filename):
         parts = line.split(' ')
         img_path = parts[0]
         label = parts[1]
-        norm_path = os.path.normpath(data_path + '/' + img_path)
+        #norm_path = os.path.normpath(data_path + '/' + img_path)
+        path_parts = img_path.split('/')
+        norm_path = path_parts[-1]
         labels[norm_path] = label
     return labels
 

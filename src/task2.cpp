@@ -9,6 +9,7 @@
 #include "EasyBMP.h"
 #include "linear.h"
 #include "argvparser.h"
+#include "methods.h"
 
 using std::string;
 using std::vector;
@@ -80,15 +81,23 @@ void SavePredictions(const TFileList& file_list,
 // You should implement this function by yourself =)
 void ExtractFeatures(const TDataSet& data_set, TFeatures* features) {
     for (size_t image_idx = 0; image_idx < data_set.size(); ++image_idx) {
-        
+        auto gray = ImgToGrayscale(data_set[image_idx].first);
+        auto hor = HorSobel(gray);
+        auto vert = VertSobel(gray);
+        /*
         // PLACE YOUR CODE HERE
         // Remove this sample code and place your feature extraction code here
         vector<float> one_image_features;
         one_image_features.push_back(1.0);
         features->push_back(make_pair(one_image_features, 1));
         // End of sample code
+        */
+
+
+        delete gray;
 
     }
+    std::cout << features->size() << std::endl;
 }
 
 // Clear dataset structure
@@ -98,11 +107,14 @@ void ClearDataset(TDataSet* data_set) {
         delete (*data_set)[image_idx].first;
         // Clear dataset
     data_set->clear();
-}
+}   
 
 // Train SVM classifier using data from 'data_file' and save trained model
 // to 'model_file'
 void TrainClassifier(const string& data_file, const string& model_file) {
+    //data_file == file with images` names and labels
+    //model_file == output_file
+    
         // List of image file names and its labels
     TFileList file_list;
         // Structure of images and its labels
@@ -210,6 +222,7 @@ int main(int argc, char** argv) {
     bool predict = cmd.foundOption("predict");
 
         // If we need to train classifier
+
     if (train)
         TrainClassifier(data_file, model_file);
         // If we need to predict data
