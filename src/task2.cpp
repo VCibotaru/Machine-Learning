@@ -27,6 +27,7 @@ typedef vector<pair<BMP*, int> > TDataSet;
 typedef vector<pair<string, int> > TFileList;
 typedef vector<pair<vector<float>, int> > TFeatures;
 
+
 // Load list of files and its labels from 'data_file' and
 // stores it in 'file_list'
 void LoadFileList(const string& data_file, TFileList* file_list) {
@@ -81,23 +82,25 @@ void SavePredictions(const TFileList& file_list,
 // You should implement this function by yourself =)
 void ExtractFeatures(const TDataSet& data_set, TFeatures* features) {
     for (size_t image_idx = 0; image_idx < data_set.size(); ++image_idx) {
-        auto gray = ImgToGrayscale(data_set[image_idx].first);
-        auto hor = HorSobel(gray);
-        auto vert = VertSobel(gray);
-        /*
-        // PLACE YOUR CODE HERE
-        // Remove this sample code and place your feature extraction code here
-        vector<float> one_image_features;
-        one_image_features.push_back(1.0);
-        features->push_back(make_pair(one_image_features, 1));
-        // End of sample code
-        */
-
-
-        delete gray;
-
+        //std::cout << image_idx << std::endl << std::flush;
+        Image gray = ImgToGrayscale(data_set[image_idx].first);
+        Image hor = gray.unary_map(HorSobel());
+        Image vert = gray.unary_map(VertSobel());
+        Image magn = Magnitude(hor, vert);
+        Image direction = Direction(hor, vert);
+        std::vector<float> result;
+        for (uint i = 0 ; i < direction.n_rows ; i += CELL_SIZE) {
+            for (uint j = 0 ; j < direction.n_cols ; j += CELL_SIZE) {
+                uint margx = std::min(CELL_SIZE, direction.n_rows - i);
+                uint margy = std::min(CELL_SIZE, direction.n_cols - j);
+                Image subMagn = magn.submatrix(i, j, margx, margy);
+                Image subDir = direction.submatrix(i, j, margx, margy);
+                std::vector<float> tmp = GetHist(subMagn, subDir);
+                result.insert(result.end(), tmp.begin(), tmp.end());
+            } 
+        }
+        features->push_back(std::make_pair(result, data_set[image_idx].second));
     }
-    std::cout << features->size() << std::endl;
 }
 
 // Clear dataset structure
@@ -132,7 +135,6 @@ void TrainClassifier(const string& data_file, const string& model_file) {
     LoadImages(file_list, &data_set);
         // Extract features from images
     ExtractFeatures(data_set, &features);
-
         // PLACE YOUR CODE HERE
         // You can change parameters of classifier here
     params.C = 0.01;
