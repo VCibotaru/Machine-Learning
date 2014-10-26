@@ -62,3 +62,47 @@ std::vector<float> ApplyHIKernel(const std::vector<float> &preHI) {
 	}
 	return postHI;
 }
+
+void GetDescriptor(const Image &hor, const Image &vert, std::vector<float> &result) {
+	for (uint i = 0 ; i < CELL_COUNT ; ++i) {
+            for (uint j = 0 ; j < CELL_COUNT ; ++j) {
+                uint rows = (i == CELL_COUNT - 1) ? hor.n_rows - i * hor.n_rows / CELL_COUNT : hor.n_rows / CELL_COUNT;
+                uint cols = (j == CELL_COUNT - 1) ? hor.n_cols - j * hor.n_cols / CELL_COUNT : hor.n_cols / CELL_COUNT;
+                uint x = i * hor.n_rows / CELL_COUNT;
+                uint y = j * hor.n_cols / CELL_COUNT;
+                Image subHor = hor.submatrix(x, y, rows, cols);
+                Image subVert = vert.submatrix(x, y, rows, cols);
+                std::vector<float> tmp = GetHist(subHor, subVert);
+                result.insert(result.end(), tmp.begin(), tmp.end());
+            } 
+        }
+}
+
+void GetCellColors(BMP *img, std::vector<float> &result, uint rows, uint cols, uint x, uint y) {
+	uint sumR, sumB, sumG, count = rows * cols;
+	sumR = sumB = sumG = 0;
+	for (uint i = x ; i < x + rows ; ++i) {
+		for (uint j = y ; j < y + cols ; ++j) {
+			auto pixel = img->GetPixel(y, x);
+			sumR += pixel.Red;
+			sumB += pixel.Blue;
+			sumG += pixel.Green;
+		}
+	}
+	result.push_back(float(sumR) / (count * 255.0));
+	result.push_back(float(sumG) / (count * 255.0));
+	result.push_back(float(sumB) / (count * 255.0));
+
+}
+
+void GetColors(BMP *img, std::vector<float> &result) {
+	for (int i = 0 ; i < COLOR_CELL_COUNT ; ++i) {
+            for (int j = 0 ; j < COLOR_CELL_COUNT ; ++j) {
+                uint rows = (i == COLOR_CELL_COUNT - 1) ? img->TellHeight() - i * img->TellHeight() / COLOR_CELL_COUNT : img->TellHeight() / COLOR_CELL_COUNT;
+                uint cols = (j == COLOR_CELL_COUNT - 1) ? img->TellWidth() - j * img->TellWidth() / COLOR_CELL_COUNT : img->TellWidth() / COLOR_CELL_COUNT;
+                uint x = i * img->TellHeight() / COLOR_CELL_COUNT;
+                uint y = j * img->TellWidth() / COLOR_CELL_COUNT;
+                GetCellColors(img, result, rows, cols, x, y);
+            }
+        }
+}

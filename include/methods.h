@@ -11,6 +11,7 @@ const uint CELL_COUNT  = 16;
 const uint SEGMENT_COUNT = 16;
 const float L = 0.5;
 const int N = 1;
+const int COLOR_CELL_COUNT = 8;
 
 
 typedef Matrix<float> Image;
@@ -41,6 +42,9 @@ public:
 };
 
 Image ImgToGrayscale(BMP *img);
+void GetDescriptor(const Image &hor, const Image &vert, std::vector<float> &result);
+void GetColors(BMP *img, std::vector<float> &result);
 std::vector<float> GetHist(const Image &hor, const Image &vert);
 std::vector<float> ApplyHIKernel(const std::vector<float> &preHI);
+
 #endif

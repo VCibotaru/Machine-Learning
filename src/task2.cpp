@@ -86,20 +86,30 @@ void ExtractFeatures(const TDataSet& data_set, TFeatures* features) {
         //Image gray2 = ImgToGrayscale(data_set[image_idx].first);
         Image hor = gray.unary_map(HorSobel());
         Image vert = gray.unary_map(VertSobel());
+
+
         std::vector<float> result;
-        for (uint i = 0 ; i < CELL_COUNT ; ++i) {
-            for (uint j = 0 ; j < CELL_COUNT ; ++j) {
-                uint rows = (i == CELL_COUNT - 1) ? hor.n_rows - i * hor.n_rows / CELL_COUNT : hor.n_rows / CELL_COUNT;
-                uint cols = (j == CELL_COUNT - 1) ? hor.n_cols - j * hor.n_cols / CELL_COUNT : hor.n_cols / CELL_COUNT;
-                uint x = i * hor.n_rows / CELL_COUNT;
-                uint y = j * hor.n_cols / CELL_COUNT;
-                Image subHor = hor.submatrix(x, y, rows, cols);
-                Image subVert = vert.submatrix(x, y, rows, cols);
-                std::vector<float> tmp = GetHist(subHor, subVert);
-                result.insert(result.end(), tmp.begin(), tmp.end());
-            } 
-        }
+        
+        //main task:
+        GetDescriptor(hor, vert, result);
+
+        //pyramid descriptor:
+        
+        
+        uint halfRows = hor.n_rows >> 1;
+        uint halfCols = hor.n_cols >> 1;
+
+        GetDescriptor(hor.submatrix(0, 0, halfRows, halfCols), vert.submatrix(0, 0, halfRows, halfCols), result);
+        GetDescriptor(hor.submatrix(0, halfCols, halfRows, halfCols), vert.submatrix(0, halfCols, halfRows, halfCols), result);
+        GetDescriptor(hor.submatrix(halfRows, 0, halfRows, halfCols), vert.submatrix(halfRows, 0, halfRows, halfCols), result);
+        GetDescriptor(hor.submatrix(halfRows, halfCols, halfRows, halfCols), vert.submatrix(halfRows, halfCols, halfRows, halfCols), result);
+        
+        //HI-square kernel:
         result = ApplyHIKernel(result);
+        
+        //Colors:
+        GetColors(data_set[image_idx].first, result);
+        
         features->push_back(std::make_pair(result, data_set[image_idx].second));
     }
 }
