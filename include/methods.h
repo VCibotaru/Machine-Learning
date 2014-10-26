@@ -7,8 +7,11 @@
 
 
 
-const uint CELL_COUNT  = 32;
+const uint CELL_COUNT  = 16;
 const uint SEGMENT_COUNT = 16;
+const float L = 0.5;
+const int N = 1;
+
 
 typedef Matrix<float> Image;
 
@@ -21,7 +24,7 @@ public:
     VertSobel() : vert_radius(1), hor_radius(0) {}
     float operator () (const Image &mat) const
     {
-        return -mat(0, 0) + mat(2, 0);
+        return mat(0, 0) - mat(2, 0);
     }
 };
 
@@ -39,4 +42,5 @@ public:
 
 Image ImgToGrayscale(BMP *img);
 std::vector<float> GetHist(const Image &hor, const Image &vert);
+std::vector<float> ApplyHIKernel(const std::vector<float> &preHI);
 #endif

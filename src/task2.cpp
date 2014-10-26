@@ -91,12 +91,15 @@ void ExtractFeatures(const TDataSet& data_set, TFeatures* features) {
             for (uint j = 0 ; j < CELL_COUNT ; ++j) {
                 uint rows = (i == CELL_COUNT - 1) ? hor.n_rows - i * hor.n_rows / CELL_COUNT : hor.n_rows / CELL_COUNT;
                 uint cols = (j == CELL_COUNT - 1) ? hor.n_cols - j * hor.n_cols / CELL_COUNT : hor.n_cols / CELL_COUNT;
-                Image subHor = hor.submatrix(i, j, rows, cols);
-                Image subVert = vert.submatrix(i, j, rows, cols);
+                uint x = i * hor.n_rows / CELL_COUNT;
+                uint y = j * hor.n_cols / CELL_COUNT;
+                Image subHor = hor.submatrix(x, y, rows, cols);
+                Image subVert = vert.submatrix(x, y, rows, cols);
                 std::vector<float> tmp = GetHist(subHor, subVert);
                 result.insert(result.end(), tmp.begin(), tmp.end());
             } 
         }
+        result = ApplyHIKernel(result);
         features->push_back(std::make_pair(result, data_set[image_idx].second));
     }
 }
