@@ -7,8 +7,8 @@
 
 
 
-const uint CELL_SIZE  = 16;
-const uint SEGMENT_COUNT = 10;
+const uint CELL_COUNT  = 32;
+const uint SEGMENT_COUNT = 16;
 
 typedef Matrix<float> Image;
 
@@ -38,7 +38,5 @@ public:
 };
 
 Image ImgToGrayscale(BMP *img);
-Image Magnitude(const Image &hor, const Image &vert);
-Image Direction(const Image &hor, const Image &vert);
-std::vector<float> GetHist(const Image &magn, const Image &dir);
+std::vector<float> GetHist(const Image &hor, const Image &vert);
 #endif

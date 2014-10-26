@@ -82,20 +82,18 @@ void SavePredictions(const TFileList& file_list,
 // You should implement this function by yourself =)
 void ExtractFeatures(const TDataSet& data_set, TFeatures* features) {
     for (size_t image_idx = 0; image_idx < data_set.size(); ++image_idx) {
-        //std::cout << image_idx << std::endl << std::flush;
         Image gray = ImgToGrayscale(data_set[image_idx].first);
+        //Image gray2 = ImgToGrayscale(data_set[image_idx].first);
         Image hor = gray.unary_map(HorSobel());
         Image vert = gray.unary_map(VertSobel());
-        Image magn = Magnitude(hor, vert);
-        Image direction = Direction(hor, vert);
         std::vector<float> result;
-        for (uint i = 0 ; i < direction.n_rows ; i += CELL_SIZE) {
-            for (uint j = 0 ; j < direction.n_cols ; j += CELL_SIZE) {
-                uint margx = std::min(CELL_SIZE, direction.n_rows - i);
-                uint margy = std::min(CELL_SIZE, direction.n_cols - j);
-                Image subMagn = magn.submatrix(i, j, margx, margy);
-                Image subDir = direction.submatrix(i, j, margx, margy);
-                std::vector<float> tmp = GetHist(subMagn, subDir);
+        for (uint i = 0 ; i < CELL_COUNT ; ++i) {
+            for (uint j = 0 ; j < CELL_COUNT ; ++j) {
+                uint rows = (i == CELL_COUNT - 1) ? hor.n_rows - i * hor.n_rows / CELL_COUNT : hor.n_rows / CELL_COUNT;
+                uint cols = (j == CELL_COUNT - 1) ? hor.n_cols - j * hor.n_cols / CELL_COUNT : hor.n_cols / CELL_COUNT;
+                Image subHor = hor.submatrix(i, j, rows, cols);
+                Image subVert = vert.submatrix(i, j, rows, cols);
+                std::vector<float> tmp = GetHist(subHor, subVert);
                 result.insert(result.end(), tmp.begin(), tmp.end());
             } 
         }

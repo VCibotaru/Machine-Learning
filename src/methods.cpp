@@ -7,49 +7,25 @@
 #define B 0.114
 
 Image ImgToGrayscale(BMP *img) {
-	Image newImg(img->TellWidth(), img->TellHeight());
-	for (int i = 0 ; i < img->TellWidth() ; ++i) {
-		for (int j = 0 ; j < img->TellHeight() ; ++j) {
-			auto pixel = img->GetPixel(i, j);
-			float value = pixel.Red * R + pixel.Green * G + pixel.Blue * B;
+	Image newImg(img->TellHeight(), img->TellWidth());
+	for (uint i = 0 ; i < newImg.n_rows ; ++i) {
+		for (uint j = 0 ; j < newImg.n_cols ; ++j) {
+			auto pixel = img->GetPixel(j, i);
+			int value = pixel.Red * R + pixel.Green * G + pixel.Blue * B;
 			newImg(i, j) = value;
 		}
 	}
 	return newImg;
 }
 
-Image Magnitude(const Image &hor, const Image &vert) {
-	Image newImg(hor.n_rows, hor.n_cols);
-	for (uint i = 0 ; i < hor.n_rows ; ++i) {
-		for (uint j = 0 ; j < hor.n_cols ; ++j) {
-			float a = std::pow(hor(i, j), 2);
-			float b = std::pow(vert(i, j), 2);
-			newImg(i, j) = std::sqrt(a + b);
-		}
-	}
-	return newImg;
-
-}
-Image Direction(const Image &hor, const Image &vert) {
-	Image newImg(hor.n_rows, hor.n_cols);
-	for (uint i = 0 ; i < hor.n_rows ; ++i) {
-		for (uint j = 0 ; j < hor.n_cols ; ++j) {
-			float x = hor(i, j);
-			float y = vert(i, j);
-			newImg(i, j) = std::atan2(y, x);
-		}
-	}
-	return newImg;
-}
-
-std::vector<float> GetHist(const Image &magn, const Image &dir) {
+std::vector<float> GetHist(const Image &hor, const Image &vert) {
 	std::vector<float> result(SEGMENT_COUNT);
-	for (uint i = 0 ; i < dir.n_rows ; ++i) {
-		for (uint j = 0 ; j < dir.n_cols ; ++j) {
-			float angle = dir(i, j);
-			uint section = int(SEGMENT_COUNT * (angle + M_PI) / (2 * M_PI));
+	for (uint i = 0 ; i < hor.n_rows ; ++i) {
+		for (uint j = 0 ; j < hor.n_cols ; ++j) {
+			float angle = std::atan2(vert(i,j), hor(i,j));
+			uint section = uint(SEGMENT_COUNT * (angle + M_PI) / (2 * M_PI));
 			section = (section == SEGMENT_COUNT) ? SEGMENT_COUNT - 1 : section;
-			result[section] += magn(i, j);
+			result[section] += std::sqrt(std::pow(hor(i, j), 2) + std::pow(vert(i, j), 2) );
 		}
 	}
 	float sum = 0;

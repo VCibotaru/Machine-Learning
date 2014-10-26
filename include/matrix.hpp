@@ -18,11 +18,8 @@ Matrix<ValueT>::Matrix(uint row_count, uint col_count) :
 	_data{}
 {
 	auto size = n_cols * n_rows;
-	if (size) {
-		auto ptr = new ValueT[size];
-        memset(ptr, 0, size * sizeof(ValueT));
+	if (size)
         _data.reset(new ValueT[size], std::default_delete<ValueT []>());
-	}
 		
 }
 
